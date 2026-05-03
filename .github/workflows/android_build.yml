@@ -24,14 +24,20 @@ jobs:
       - name: Install Cordova
         run: npm install -g cordova
 
-      - name: Build APK
+      - name: Clean old Android platform
+        run: rm -rf platforms/android
+
+      - name: Add Android platform
+        run: cordova platform add android@12.0.0 --no-telemetry
+
+      - name: Generate Gradle Wrapper
         run: |
-          # حذف المنصة القديمة تماماً لضمان عدم تداخل الإعدادات
-          rm -rf platforms/android
-          
-          # إضافة المنصة وبناء الـ APK بأمر واحد مباشر
-          cordova platform add android@12.0.0 --no-telemetry
-          cordova build android --release -- --packageType=apk
+          cd platforms/android
+          ./gradlew wrapper --gradle-version 8.5
+          cd ../..
+
+      - name: Build APK
+        run: cordova build android --release -- --packageType=apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
