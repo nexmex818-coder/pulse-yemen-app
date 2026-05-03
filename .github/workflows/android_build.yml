@@ -24,12 +24,12 @@ jobs:
       - name: Install Cordova
         run: npm install -g cordova
 
-      - name: Build Android APK
+      - name: Build APK
         run: |
-          # حذف أي ملفات قديمة لضمان بناء نظيف
+          # حذف المنصة القديمة تماماً لضمان عدم تداخل الإعدادات
           rm -rf platforms/android
           
-          # إضافة المنصة وبناء التطبيق
+          # إضافة المنصة وبناء الـ APK بأمر واحد مباشر
           cordova platform add android@12.0.0 --no-telemetry
           cordova build android --release -- --packageType=apk
 
