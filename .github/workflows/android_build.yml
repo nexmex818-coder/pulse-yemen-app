@@ -21,27 +21,30 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Cordova & Gradle
+      - name: Manual Gradle Installation
         run: |
-          npm install -g cordova
-          # تثبيت إصدار Gradle محدد لضمان التوافق مع مشروعك
-          wget https://services.gradle.org/distributions/gradle-8.0-bin.zip
-          sudo unzip -d /opt/gradle gradle-8.0-bin.zip
-          echo "PATH=$PATH:/opt/gradle/gradle-8.0/bin" >> $GITHUB_ENV
+          # تحميل وتثبيت Gradle 8.0 يدوياً لتجنب النسخة 9.4.1 الفاشلة
+          wget -q https://services.gradle.org/distributions/gradle-8.0-bin.zip
+          sudo unzip -q -d /opt/gradle gradle-8.0-bin.zip
+          echo "/opt/gradle/gradle-8.0/bin" >> $GITHUB_PATH
 
-      - name: Prepare Platform
+      - name: Install Cordova
+        run: npm install -g cordova
+
+      - name: Prepare Android Platform
         run: |
+          # إجبار المشروع على استخدام Gradle 8.0
           cordova platform add android@12.0.0 --no-telemetry
-          # إجبار المشروع على استخدام الإصدار الصحيح من الـ Wrapper
           cd platforms/android && gradle wrapper --gradle-version 8.0
 
-      - name: Build APK
+      - name: Build Final APK
         run: |
-          # البناء مع تجاوز فحص التوقيع الرقمي لإنتاج APK مباشر
+          # البناء مع تجاوز فحص التوقيع الرقمي
           cordova build android --release -- --packageType=apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Pulse-Yemen-Final
+          name: Pulse-Yemen-Build
           path: platforms/android/app/build/outputs/apk/release/*.apk
+          
