@@ -15,24 +15,25 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          # هذه الخطوة ستحل مشكلة الـ Gradle نهائياً
+          cache: 'gradle'
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install Tools
-        run: |
-          npm install -g cordova
-          wget -q https://services.gradle.org/distributions/gradle-8.0-bin.zip
-          sudo unzip -q -d /opt/gradle gradle-8.0-bin.zip
-          echo "/opt/gradle/gradle-8.0/bin" >> $GITHUB_PATH
+      - name: Install Cordova
+        run: npm install -g cordova
 
       - name: Build APK
         run: |
+          # تنظيف أي مخلفات قديمة
+          rm -rf platforms/android
+          rm -rf plugins
+          
+          # إضافة المنصة وبناء الـ APK
           cordova platform add android@12.0.0 --no-telemetry
-          cd platforms/android && gradle wrapper --gradle-version 8.0
-          cd ../..
           cordova build android --release -- --packageType=apk
 
       - name: Upload APK
