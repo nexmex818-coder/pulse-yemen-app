@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نبض الصرف</title>
+    <script src="cordova.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { background: #121212; color: white; font-family: 'Cairo', sans-serif; margin: 0; text-align: center; }
+        .lock-screen { position: fixed; inset: 0; background: #121212; z-index: 99; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .card { background: rgba(255,255,255,0.05); margin: 15px; padding: 20px; border-radius: 15px; border-right: 4px solid #00d2ff; }
+        button { background: #00d2ff; border: none; padding: 15px 30px; border-radius: 50px; font-weight: bold; cursor: pointer; color: #000; }
+        .price { font-size: 1.2em; font-weight: bold; color: #00ff88; }
+    </style>
+</head>
+<body>
+    <div id="lock" class="lock-screen">
+        <i class="fa-solid fa-lock" style="font-size:50px; color:#ffcc00"></i>
+        <h2>الأسعار مقفلة</h2>
+        <p>شاهد فيديو قصير لفتح التحديث الجديد</p>
+        <button onclick="requestAd()">شاهد الفيديو الآن</button>
+    </div>
+    <header style="padding:20px; border-bottom:1px solid #222;"><h1>نبض الصرف | عدن</h1></header>
+    <div class="card">
+        <h3>عدن (الآن)</h3>
+        <p>السعودي شراء: <span id="aden-buy" class="price">--</span></p>
+        <p>السعودي بيع: <span id="aden-sell" class="price">--</span></p>
+    </div>
+    <script>
+        const AD_UNITS = {
+            rewarded: "ca-app-pub-4943444983084323/5053459424",
+            banner: "ca-app-pub-4943444983084323/8301548651"
+        };
+        document.addEventListener('deviceready', () => {
+            admob.rewarded.load({ adUnitId: AD_UNITS.rewarded });
+            admob.banner.show({ adUnitId: AD_UNITS.banner });
+        }, false);
+        async function requestAd() {
+            try { await admob.rewarded.show(); } catch (e) { unlock(); }
+        }
+        document.addEventListener('admob.rewarded.reward', () => { unlock(); });
+        function unlock() {
+            document.getElementById('lock').style.display = 'none';
+            fetchPrices();
+        }
+        async function fetchPrices() {
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/nexmex818-coder/currency-data/main/prices.json');
+                const data = await response.json();
+                document.getElementById('aden-buy').innerText = data.aden.buy;
+                document.getElementById('aden-sell').innerText = data.aden.sell;
+            } catch (err) { console.log("Error"); }
+        }
+    </script>
+</body>
+</html>
