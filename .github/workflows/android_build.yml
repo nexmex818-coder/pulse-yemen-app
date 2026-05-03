@@ -8,37 +8,46 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # 1. سحب الكود من المستودع
       - uses: actions/checkout@v4
 
+      # 2. إعداد Java
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
+      # 3. إعداد Node.js
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
+      # 4. تثبيت Cordova
       - name: Install Cordova
         run: npm install -g cordova
 
+      # 5. تنظيف المنصة القديمة
       - name: Clean old Android platform
         run: rm -rf platforms/android
 
+      # 6. إضافة منصة أندرويد جديدة
       - name: Add Android platform
         run: cordova platform add android@12.0.0 --no-telemetry
 
+      # 7. توليد Gradle Wrapper داخلي (باستخدام Gradle من النظام)
       - name: Generate Gradle Wrapper
         run: |
           cd platforms/android
-          ./gradlew wrapper --gradle-version 8.5
+          gradle wrapper --gradle-version 8.5
           cd ../..
 
+      # 8. بناء الـ APK
       - name: Build APK
         run: cordova build android --release -- --packageType=apk
 
+      # 9. رفع الـ APK الناتج
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
