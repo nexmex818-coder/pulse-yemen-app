@@ -21,24 +21,22 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Cordova & Fix Config
+      - name: Install Cordova
+        run: npm install -g cordova
+
+      - name: Prepare Platform and Fix Gradle
         run: |
-          npm install -g cordova
-          # التأكد من وجود ملف config صحيح إذا كان الحالي به خطأ
-          if [ ! -f "config.xml" ]; then
-            cordova create tmp_app com.nexmex.pulse PulseYemen
-            cp tmp_app/config.xml .
-            rm -rf tmp_app
-          fi
+          cordova platform add android@12.0.0 --no-telemetry
+          # هذا السطر يحل مشكلة الـ Wrapper التي ظهرت لك
+          cd platforms/android && ./gradlew clean || true
 
       - name: Build APK
         run: |
-          cordova platform add android@12.0.0 --no-telemetry
-          # بناء APK عادي بدلاً من Bundle لتجنب أخطاء التوقيع
+          # بناء APK مباشر وتجنب طلبات التوقيع الرقمي
           cordova build android --release -- --packageType=apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Pulse-Yemen-App
+          name: Pulse-Yemen-Fixed
           path: platforms/android/app/build/outputs/apk/release/*.apk
