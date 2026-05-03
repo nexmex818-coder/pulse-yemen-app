@@ -21,22 +21,27 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Cordova
-        run: npm install -g cordova
+      - name: Install Cordova & Gradle
+        run: |
+          npm install -g cordova
+          # تثبيت إصدار Gradle محدد لضمان التوافق مع مشروعك
+          wget https://services.gradle.org/distributions/gradle-8.0-bin.zip
+          sudo unzip -d /opt/gradle gradle-8.0-bin.zip
+          echo "PATH=$PATH:/opt/gradle/gradle-8.0/bin" >> $GITHUB_ENV
 
-      - name: Prepare Platform and Fix Gradle
+      - name: Prepare Platform
         run: |
           cordova platform add android@12.0.0 --no-telemetry
-          # هذا السطر يحل مشكلة الـ Wrapper التي ظهرت لك
-          cd platforms/android && ./gradlew clean || true
+          # إجبار المشروع على استخدام الإصدار الصحيح من الـ Wrapper
+          cd platforms/android && gradle wrapper --gradle-version 8.0
 
       - name: Build APK
         run: |
-          # بناء APK مباشر وتجنب طلبات التوقيع الرقمي
+          # البناء مع تجاوز فحص التوقيع الرقمي لإنتاج APK مباشر
           cordova build android --release -- --packageType=apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Pulse-Yemen-Fixed
+          name: Pulse-Yemen-Final
           path: platforms/android/app/build/outputs/apk/release/*.apk
